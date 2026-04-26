@@ -19,11 +19,17 @@ export default function App() {
   const handleSubmit = async () => {
     setLoading(true); setResult(null); setShowXAI(false); setShowResult(false);
     try {
-      const res = await axios.post("http://localhost:8000/predict", {
-        TransactionAmt: Number(form.TransactionAmt), card1: Number(form.card1),
-        card2: Number(form.card2), card3: Number(form.card3),
-        addr1: Number(form.addr1), dist1: Number(form.dist1),
-      });
+      const res = await axios.post(
+        "https://fraud-gnn-backend.onrender.com/predict",
+        {
+          TransactionAmt: Number(form.TransactionAmt),
+          card1: Number(form.card1),
+          card2: Number(form.card2),
+          card3: Number(form.card3),
+          addr1: Number(form.addr1),
+          dist1: Number(form.dist1),
+        },
+      );
       const data = res.data.data;
       setResult(data);
       setTimeout(() => setShowResult(true), 200);
