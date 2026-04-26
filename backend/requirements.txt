@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+torch
+torchvision
+torchaudio
+torch-geometric
+pandas
+numpy
+scikit-learn
