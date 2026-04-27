@@ -16,8 +16,8 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
-/* Selection color */
+/* Selection color — Gold accent */
 ::selection {
-  background: rgba(139, 92, 246, 0.3);
+  background: rgba(255, 215, 0, 0.3);
   color: white;
 }

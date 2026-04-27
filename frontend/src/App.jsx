@@ -19,17 +19,11 @@ export default function App() {
   const handleSubmit = async () => {
     setLoading(true); setResult(null); setShowXAI(false); setShowResult(false);
     try {
-      const res = await axios.post(
-        "https://fraud-gnn-backend.onrender.com/predict",
-        {
-          TransactionAmt: Number(form.TransactionAmt),
-          card1: Number(form.card1),
-          card2: Number(form.card2),
-          card3: Number(form.card3),
-          addr1: Number(form.addr1),
-          dist1: Number(form.dist1),
-        },
-      );
+      const res = await axios.post("http://localhost:8000/predict", {
+        TransactionAmt: Number(form.TransactionAmt), card1: Number(form.card1),
+        card2: Number(form.card2), card3: Number(form.card3),
+        addr1: Number(form.addr1), dist1: Number(form.dist1),
+      });
       const data = res.data.data;
       setResult(data);
       setTimeout(() => setShowResult(true), 200);
@@ -70,12 +64,15 @@ export default function App() {
   const hasResult = result && !result.__error;
   const riskPercent = isUnknown ? 90 : hasResult ? Math.round((result?.probability||0)*100) : null;
   const isFraud = hasResult && !isUnknown && result.prediction === 1;
-  const riskColor = riskPercent===null?"#8b5cf6":riskPercent>80?"#ff2d55":riskPercent>50?"#ffb800":"#00f5ff";
+
+  // ─── AMOLED Gold/Silver Risk Colors ───
+  const riskColor = riskPercent===null?"#FFD700":riskPercent>80?"#EF4444":riskPercent>50?"#F59E0B":"#22C55E";
   const xaiFeatures = getXAIFeatures();
   const reasons = getReasons();
 
-  const sevColor = (s) => s==="safe"?"#00ff88":s==="critical"?"#ff0040":s==="high"?"#ff2d55":"#ffb800";
-  const sevBg = (s) => s==="safe"?"rgba(0,255,136,0.06)":s==="critical"?"rgba(255,0,64,0.08)":s==="high"?"rgba(255,45,85,0.06)":"rgba(255,184,0,0.06)";
+  // Severity colors — complementary to gold/silver theme
+  const sevColor = (s) => s==="safe"?"#22C55E":s==="critical"?"#DC2626":s==="high"?"#EF4444":"#F59E0B";
+  const sevBg = (s) => s==="safe"?"rgba(34,197,94,0.06)":s==="critical"?"rgba(220,38,38,0.08)":s==="high"?"rgba(239,68,68,0.06)":"rgba(245,158,11,0.06)";
 
   const inputFields = [
     { name: "TransactionAmt", label: "Amount", icon: "💰", placeholder: "0.00", unit: "USD" },
@@ -86,62 +83,62 @@ export default function App() {
     { name: "card3", label: "Card 3", icon: "📡", placeholder: "150" },
   ];
 
-  // Styles
+  // ─── Styles — AMOLED Black × Gold × Silver ───
   const S = {
     page: { position:"relative",minHeight:"100vh",overflow:"hidden",fontFamily:"var(--font-body)" },
     layer: { position:"relative",zIndex:10,minHeight:"100vh",display:"flex",flexDirection:"column" },
-    header: { display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 32px",borderBottom:"1px solid rgba(255,255,255,0.04)",background:"rgba(2,1,8,0.5)",backdropFilter:"blur(30px)" },
+    header: { display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 32px",borderBottom:"1px solid rgba(255,215,0,0.06)",background:"rgba(0,0,0,0.7)",backdropFilter:"blur(30px)" },
     logoBox: { display:"flex",alignItems:"center",gap:12 },
-    logoIcon: { width:36,height:36,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(135deg,#8b5cf6,#00f5ff)",boxShadow:"0 0 20px rgba(139,92,246,0.3)",fontSize:16 },
-    logoText: { fontFamily:"var(--font-display)",fontSize:13,fontWeight:800,color:"white",letterSpacing:4 },
-    logoSub: { fontFamily:"var(--font-mono)",fontSize:8,color:"#334155",letterSpacing:2,marginTop:2 },
+    logoIcon: { width:36,height:36,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(135deg,#FFD700,#C0C0C0)",boxShadow:"0 0 20px rgba(255,215,0,0.25)",fontSize:16,color:"#000" },
+    logoText: { fontFamily:"var(--font-display)",fontSize:15,fontWeight:800,color:"#FFD700",letterSpacing:4 },
+    logoSub: { fontFamily:"var(--font-mono)",fontSize:11,color:"#8B8B94",letterSpacing:2,marginTop:2 },
     headerRight: { display:"flex",alignItems:"center",gap:16 },
-    timeBox: { fontFamily:"var(--font-mono)",fontSize:10,color:"#334155",letterSpacing:1 },
+    timeBox: { fontFamily:"var(--font-mono)",fontSize:13,color:"#A1A1AA",letterSpacing:1 },
     main: { flex:1,display:"flex",alignItems:"flex-start",justifyContent:"center",padding:"32px 24px" },
     container: { width:"100%",maxWidth:1280 },
     titleWrap: { textAlign:"center",marginBottom:40 },
-    subtitle: { fontFamily:"var(--font-mono)",fontSize:9,letterSpacing:6,color:"#334155",marginBottom:12,textTransform:"uppercase" },
-    h1: { fontSize:52,fontWeight:900,color:"white",letterSpacing:-1,lineHeight:1.1,fontFamily:"var(--font-body)" },
+    subtitle: { fontFamily:"var(--font-mono)",fontSize:12,letterSpacing:6,color:"#A1A1AA",marginBottom:12,textTransform:"uppercase" },
+    h1: { fontSize:52,fontWeight:900,color:"#D4D4D8",letterSpacing:-1,lineHeight:1.1,fontFamily:"var(--font-body)" },
     h1Accent: (c) => ({ color:c,transition:"color 0.8s",textShadow:`0 0 60px ${c}44` }),
-    desc: { fontFamily:"var(--font-mono)",fontSize:10,color:"#1e293b",letterSpacing:2,marginTop:12 },
+    desc: { fontFamily:"var(--font-mono)",fontSize:13,color:"#71717A",letterSpacing:2,marginTop:12 },
     grid: { display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr 1fr",gap:20 },
     sectionLabel: { display:"flex",alignItems:"center",gap:8,marginBottom:20 },
     sectionBar: (c) => ({ width:3,height:18,borderRadius:4,background:c }),
-    sectionText: { fontFamily:"var(--font-display)",fontSize:11,fontWeight:700,color:"white",letterSpacing:3,textTransform:"uppercase" },
+    sectionText: { fontFamily:"var(--font-display)",fontSize:14,fontWeight:700,color:"#E4E4E7",letterSpacing:3,textTransform:"uppercase" },
     inputSpace: { display:"flex",flexDirection:"column",gap:14 },
     inputRow: { display:"grid",gridTemplateColumns:"1fr 1fr",gap:12 },
     btn: (l) => ({
-      marginTop:24,width:"100%",padding:"16px 0",borderRadius:14,fontFamily:"var(--font-display)",fontSize:11,fontWeight:700,letterSpacing:4,textTransform:"uppercase",border:`1px solid ${l?"rgba(139,92,246,0.2)":"rgba(0,245,255,0.4)"}`,
-      background:l?"rgba(139,92,246,0.1)":"linear-gradient(135deg,rgba(139,92,246,0.8),rgba(0,245,255,0.6))",
-      color:"white",cursor:l?"not-allowed":"pointer",
-      boxShadow:l?"none":"0 0 40px rgba(0,245,255,0.15),0 0 80px rgba(139,92,246,0.1),inset 0 1px 0 rgba(255,255,255,0.15)",
+      marginTop:24,width:"100%",padding:"18px 0",borderRadius:14,fontFamily:"var(--font-display)",fontSize:13,fontWeight:700,letterSpacing:4,textTransform:"uppercase",border:`1px solid ${l?"rgba(255,215,0,0.15)":"rgba(255,215,0,0.35)"}`,
+      background:l?"rgba(255,215,0,0.05)":"linear-gradient(135deg,rgba(255,215,0,0.7),rgba(192,192,192,0.5))",
+      color:l?"#71717A":"#000000",cursor:l?"not-allowed":"pointer",
+      boxShadow:l?"none":"0 0 40px rgba(255,215,0,0.12),0 0 80px rgba(192,192,192,0.06),inset 0 1px 0 rgba(255,255,255,0.15)",
       transition:"all 0.4s",position:"relative",overflow:"hidden",
     }),
     btnHover: { filter:"brightness(1.15)",transform:"translateY(-1px)" },
-    spinner: { display:"inline-block",width:16,height:16,border:"2px solid rgba(255,255,255,0.2)",borderTopColor:"white",borderRadius:"50%",animation:"rotate-slow 0.6s linear infinite" },
-    footer: { textAlign:"center",padding:"12px 0",fontFamily:"var(--font-mono)",fontSize:8,color:"#0f172a",letterSpacing:3,borderTop:"1px solid rgba(255,255,255,0.03)" },
+    spinner: { display:"inline-block",width:16,height:16,border:"2px solid rgba(255,215,0,0.2)",borderTopColor:"#FFD700",borderRadius:"50%",animation:"rotate-slow 0.6s linear infinite" },
+    footer: { textAlign:"center",padding:"14px 0",fontFamily:"var(--font-mono)",fontSize:11,color:"#52525B",letterSpacing:3,borderTop:"1px solid rgba(255,215,0,0.04)" },
     emptyState: { display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"60px 0" },
-    emptyHex: { fontSize:72,opacity:0.08,marginBottom:16,animation:"float 4s ease-in-out infinite" },
-    emptyText: { fontFamily:"var(--font-mono)",fontSize:11,color:"#1e293b",letterSpacing:2 },
+    emptyHex: { fontSize:72,opacity:0.08,marginBottom:16,animation:"float 4s ease-in-out infinite",color:"#FFD700" },
+    emptyText: { fontFamily:"var(--font-mono)",fontSize:14,color:"#71717A",letterSpacing:2 },
     loadingWrap: { display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"50px 0" },
     resultHeader: { display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,flexWrap:"wrap",gap:16 },
-    resultLabel: { fontFamily:"var(--font-mono)",fontSize:9,color:"#475569",letterSpacing:3,marginBottom:6 },
-    resultTitle: (c) => ({ fontFamily:"var(--font-display)",fontSize:20,fontWeight:800,color:c,letterSpacing:2 }),
+    resultLabel: { fontFamily:"var(--font-mono)",fontSize:12,color:"#A1A1AA",letterSpacing:3,marginBottom:6 },
+    resultTitle: (c) => ({ fontFamily:"var(--font-display)",fontSize:22,fontWeight:800,color:c,letterSpacing:2 }),
     metaGrid: { display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:20 },
-    metaCard: { textAlign:"center",padding:"14px 10px",borderRadius:12,background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.05)" },
-    metaLabel: { fontFamily:"var(--font-mono)",fontSize:8,color:"#334155",letterSpacing:2,marginBottom:4 },
-    metaValue: (c) => ({ fontFamily:"var(--font-mono)",fontSize:13,fontWeight:700,color:c }),
+    metaCard: { textAlign:"center",padding:"14px 10px",borderRadius:12,background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,215,0,0.05)" },
+    metaLabel: { fontFamily:"var(--font-mono)",fontSize:11,color:"#8B8B94",letterSpacing:2,marginBottom:4 },
+    metaValue: (c) => ({ fontFamily:"var(--font-mono)",fontSize:15,fontWeight:700,color:c }),
     reasonRow: (s) => ({ display:"flex",alignItems:"center",gap:12,padding:"12px 16px",borderRadius:12,background:sevBg(s),border:`1px solid ${sevColor(s)}20`,marginBottom:8 }),
     reasonIcon: { fontSize:16 },
-    reasonText: { fontFamily:"var(--font-mono)",fontSize:10,color:"#94a3b8",flex:1 },
-    reasonBadge: (s) => ({ fontFamily:"var(--font-mono)",fontSize:8,color:sevColor(s),letterSpacing:2,textTransform:"uppercase",padding:"2px 8px",borderRadius:10,background:"rgba(255,255,255,0.03)" }),
-    historyLabel: { fontFamily:"var(--font-mono)",fontSize:8,color:"#1e293b",letterSpacing:3,marginBottom:8,marginTop:20,textTransform:"uppercase" },
-    historyRow: { display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:8,background:"rgba(255,255,255,0.015)",border:"1px solid rgba(255,255,255,0.03)",marginBottom:4,fontFamily:"var(--font-mono)",fontSize:10 },
-    xaiInfo: { marginTop:16,padding:"14px 16px",borderRadius:14,background:"rgba(139,92,246,0.05)",border:"1px solid rgba(139,92,246,0.12)",fontFamily:"var(--font-mono)",fontSize:9,color:"#475569",lineHeight:1.8,letterSpacing:0.5 },
+    reasonText: { fontFamily:"var(--font-mono)",fontSize:13,color:"#D4D4D8",flex:1 },
+    reasonBadge: (s) => ({ fontFamily:"var(--font-mono)",fontSize:11,color:sevColor(s),letterSpacing:2,textTransform:"uppercase",padding:"3px 10px",borderRadius:10,background:"rgba(255,255,255,0.03)" }),
+    historyLabel: { fontFamily:"var(--font-mono)",fontSize:11,color:"#71717A",letterSpacing:3,marginBottom:8,marginTop:20,textTransform:"uppercase" },
+    historyRow: { display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 14px",borderRadius:8,background:"rgba(255,255,255,0.015)",border:"1px solid rgba(255,215,0,0.04)",marginBottom:4,fontFamily:"var(--font-mono)",fontSize:13 },
+    xaiInfo: { marginTop:16,padding:"14px 16px",borderRadius:14,background:"rgba(255,215,0,0.04)",border:"1px solid rgba(255,215,0,0.10)",fontFamily:"var(--font-mono)",fontSize:12,color:"#A1A1AA",lineHeight:1.8,letterSpacing:0.5 },
     sidebar: { display:"flex",flexDirection:"column",gap:12 },
-    statCard: { padding:"16px",borderRadius:14,background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.04)",textAlign:"center" },
+    statCard: { padding:"16px",borderRadius:14,background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,215,0,0.04)",textAlign:"center" },
     statValue: (c) => ({ fontFamily:"var(--font-display)",fontSize:22,fontWeight:800,color:c }),
-    statLabel: { fontFamily:"var(--font-mono)",fontSize:8,color:"#334155",letterSpacing:2,marginTop:4 },
+    statLabel: { fontFamily:"var(--font-mono)",fontSize:11,color:"#8B8B94",letterSpacing:2,marginTop:4 },
     streamWrap: { display:"flex",gap:4,justifyContent:"center",marginTop:8,opacity:0.5 },
   };
 
@@ -159,8 +156,8 @@ export default function App() {
             </div>
           </div>
           <div style={S.headerRight}>
-            <StatusBadge text="GNN ONLINE" color="#00ff88" pulse />
-            <StatusBadge text="v2.4" color="#8b5cf6" />
+            <StatusBadge text="GNN ONLINE" color="#22C55E" pulse />
+            <StatusBadge text="v2.4" color="#FFD700" />
             <div style={S.timeBox}>{currentTime.toLocaleTimeString()}</div>
           </div>
         </header>
@@ -183,7 +180,7 @@ export default function App() {
               <div style={{ gridColumn: "span 2" }}>
                 <GlassPanel>
                   <div style={S.sectionLabel}>
-                    <div style={S.sectionBar("#8b5cf6")} />
+                    <div style={S.sectionBar("#FFD700")} />
                     <span style={S.sectionText}>Parameters</span>
                   </div>
                   <div style={S.inputSpace}>
@@ -220,9 +217,9 @@ export default function App() {
                       <div style={S.historyLabel}>SCAN HISTORY</div>
                       {txHistory.map((tx, i) => (
                         <div key={i} style={S.historyRow}>
-                          <span style={{ color:"#334155" }}>{tx.time}</span>
-                          <span style={{ color:"#64748b" }}>${tx.amt}</span>
-                          <span style={{ color:tx.risk>80?"#ff2d55":tx.risk>50?"#ffb800":"#00f5ff",fontWeight:700 }}>{tx.risk}%</span>
+                          <span style={{ color:"#8B8B94" }}>{tx.time}</span>
+                          <span style={{ color:"#A1A1AA" }}>${tx.amt}</span>
+                          <span style={{ color:tx.risk>80?"#EF4444":tx.risk>50?"#F59E0B":"#22C55E",fontWeight:700 }}>{tx.risk}%</span>
                           <span>{tx.fraud?"🚨":"✅"}</span>
                         </div>
                       ))}
@@ -239,9 +236,9 @@ export default function App() {
                       <div style={S.emptyHex}>⬡</div>
                       <p style={S.emptyText}>AWAITING TRANSACTION DATA FOR NEURAL ANALYSIS</p>
                       <div style={{ ...S.streamWrap, marginTop: 24 }}>
-                        <DataStream color="#8b5cf6" width={20} speed={0.5} />
-                        <DataStream color="#8b5cf6" width={20} speed={0.7} />
-                        <DataStream color="#8b5cf6" width={20} speed={0.4} />
+                        <DataStream color="#FFD700" width={20} speed={0.5} />
+                        <DataStream color="#C0C0C0" width={20} speed={0.7} />
+                        <DataStream color="#FFD700" width={20} speed={0.4} />
                       </div>
                     </div>
                   )}
@@ -252,19 +249,19 @@ export default function App() {
                         {[0,1,2].map(i => (
                           <div key={i} style={{
                             position:"absolute",inset:0,borderRadius:"50%",
-                            border:`2px solid rgba(139,92,246,${0.6-i*0.15})`,
+                            border:`2px solid ${i%2===0 ? `rgba(255,215,0,${0.6-i*0.15})` : `rgba(192,192,192,${0.5-i*0.12})`}`,
                             animation:`rotate-${i%2===0?"slow":"reverse"} ${1.5+i*0.5}s linear infinite`,
                             borderRightColor:"transparent",borderBottomColor:"transparent",
                           }} />
                         ))}
                         <div style={{ position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center" }}>
-                          <span style={{ fontSize:24,animation:"pulse-glow 1s ease infinite" }}>⬡</span>
+                          <span style={{ fontSize:24,animation:"pulse-glow 1s ease infinite",color:"#FFD700" }}>⬡</span>
                         </div>
                       </div>
-                      <div style={{ fontFamily:"var(--font-display)",fontSize:10,color:"#8b5cf6",letterSpacing:4,animation:"pulse-glow 1.5s ease infinite" }}>
+                      <div style={{ fontFamily:"var(--font-display)",fontSize:13,color:"#FFD700",letterSpacing:4,animation:"pulse-glow 1.5s ease infinite" }}>
                         PROPAGATING THROUGH GRAPH
                       </div>
-                      <div style={{ fontFamily:"var(--font-mono)",fontSize:8,color:"#1e293b",letterSpacing:2,marginTop:8 }}>
+                      <div style={{ fontFamily:"var(--font-mono)",fontSize:12,color:"#71717A",letterSpacing:2,marginTop:8 }}>
                         Constructing subgraph · Computing embeddings · Running inference
                       </div>
                     </div>
@@ -273,8 +270,8 @@ export default function App() {
                   {result?.__error && (
                     <div style={{ textAlign:"center",padding:"40px 0" }}>
                       <div style={{ fontSize:40,marginBottom:12 }}>⚠️</div>
-                      <p style={{ fontFamily:"var(--font-display)",fontSize:14,color:"#ff2d55",letterSpacing:2 }}>CONNECTION FAILED</p>
-                      <p style={{ fontFamily:"var(--font-mono)",fontSize:10,color:"#334155",marginTop:8,letterSpacing:1 }}>
+                      <p style={{ fontFamily:"var(--font-display)",fontSize:16,color:"#EF4444",letterSpacing:2 }}>CONNECTION FAILED</p>
+                      <p style={{ fontFamily:"var(--font-mono)",fontSize:13,color:"#8B8B94",marginTop:8,letterSpacing:1 }}>
                         Ensure backend is running at localhost:8000
                       </p>
                     </div>
@@ -285,11 +282,11 @@ export default function App() {
                       <div style={S.resultHeader}>
                         <div>
                           <div style={S.resultLabel}>ANALYSIS COMPLETE</div>
-                          <div style={S.resultTitle(isUnknown?"#d946ef":isFraud?"#ff2d55":"#00f5ff")}>
+                          <div style={S.resultTitle(isUnknown?"#A855F7":isFraud?"#EF4444":"#22C55E")}>
                             {isUnknown ? "⚠️ UNKNOWN ENTITY" : isFraud ? "🚨 FRAUD DETECTED" : "✅ SAFE TRANSACTION"}
                           </div>
                           {isUnknown && (
-                            <p style={{ fontFamily:"var(--font-mono)",fontSize:9,color:"#475569",marginTop:4,letterSpacing:1 }}>
+                            <p style={{ fontFamily:"var(--font-mono)",fontSize:12,color:"#A1A1AA",marginTop:4,letterSpacing:1 }}>
                               {result.message} — Classified as HIGH RISK
                             </p>
                           )}
@@ -301,8 +298,8 @@ export default function App() {
                         <div style={S.metaGrid}>
                           {[
                             { label:"CONFIDENCE",value:riskPercent>80?"HIGH":riskPercent>50?"MED":"LOW",color:riskColor },
-                            { label:"MODEL",value:"GNN v2.4",color:"#8b5cf6" },
-                            { label:"LATENCY",value:"<50ms",color:"#00f5ff" },
+                            { label:"MODEL",value:"GNN v2.4",color:"#FFD700" },
+                            { label:"LATENCY",value:"<50ms",color:"#C0C0C0" },
                           ].map((m,i) => (
                             <div key={i} style={S.metaCard}>
                               <div style={S.metaLabel}>{m.label}</div>
@@ -314,7 +311,7 @@ export default function App() {
 
                       <div>
                         <div style={S.sectionLabel}>
-                          <div style={S.sectionBar("#d946ef")} />
+                          <div style={S.sectionBar("#C0C0C0")} />
                           <span style={S.sectionText}>Decision Factors</span>
                         </div>
                         {reasons.map((r, i) => (
@@ -331,16 +328,16 @@ export default function App() {
 
                 {/* XAI Panel */}
                 {showXAI && hasResult && (
-                  <GlassPanel animate glowColor="#00f5ff">
+                  <GlassPanel animate glowColor="#C0C0C0">
                     <div style={{ display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20 }}>
                       <div style={S.sectionLabel}>
-                        <div style={S.sectionBar("#00f5ff")} />
+                        <div style={S.sectionBar("#C0C0C0")} />
                         <span style={S.sectionText}>Shapley Attribution</span>
                       </div>
-                      <StatusBadge text="XAI" color="#00f5ff" />
+                      <StatusBadge text="XAI" color="#FFD700" />
                     </div>
                     {xaiFeatures.map((f, i) => {
-                      const c = f.importance>0.7?"#ff2d55":f.importance>0.4?"#ffb800":"#00f5ff";
+                      const c = f.importance>0.7?"#EF4444":f.importance>0.4?"#F59E0B":"#22C55E";
                       return <FeatureBar key={f.label} label={f.label} value={f.importance} max={1} color={c} delay={i*150} />;
                     })}
                     <div style={S.xaiInfo}>

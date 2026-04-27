@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 
-// ─── Threat Radar — replaces the simple RiskRing ──────────────────────────────
+// ─── Threat Radar — Gold/Silver AMOLED Theme ──────────────────────────────────
 export function ThreatRadar({ percent, color }) {
   const canvasRef = useRef(null);
   const animRef = useRef(null);
@@ -47,22 +47,25 @@ export function ThreatRadar({ percent, color }) {
       const c = parseColor(color);
       ctx.clearRect(0, 0, size, size);
 
-      // Outer rings
+      // Outer rings — with silver accent
       for (let ring = 0; ring < 4; ring++) {
         const r = 35 + ring * 15;
         ctx.beginPath();
         ctx.arc(cx, cy, r, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(${c.r}, ${c.g}, ${c.b}, ${0.04 + (3 - ring) * 0.015})`;
+        const isGold = ring % 2 === 0;
+        ctx.strokeStyle = isGold
+          ? `rgba(255, 215, 0, ${0.04 + (3 - ring) * 0.015})`
+          : `rgba(192, 192, 192, ${0.03 + (3 - ring) * 0.01})`;
         ctx.lineWidth = 0.6;
         ctx.stroke();
       }
 
-      // Radar sweep
+      // Radar sweep — gold tinted
       const sweepAngle = t * 1.5;
       const sweepGrad = ctx.createConicGradient(sweepAngle - Math.PI / 2, cx, cy);
-      sweepGrad.addColorStop(0, `rgba(${c.r}, ${c.g}, ${c.b}, 0.12)`);
-      sweepGrad.addColorStop(0.15, `rgba(${c.r}, ${c.g}, ${c.b}, 0)`);
-      sweepGrad.addColorStop(1, `rgba(${c.r}, ${c.g}, ${c.b}, 0)`);
+      sweepGrad.addColorStop(0, `rgba(255, 215, 0, 0.10)`);
+      sweepGrad.addColorStop(0.15, `rgba(255, 215, 0, 0)`);
+      sweepGrad.addColorStop(1, `rgba(255, 215, 0, 0)`);
       ctx.beginPath();
       ctx.moveTo(cx, cy);
       ctx.arc(cx, cy, 78, sweepAngle - Math.PI / 2, sweepAngle + Math.PI * 0.3 - Math.PI / 2);
@@ -70,7 +73,7 @@ export function ThreatRadar({ percent, color }) {
       ctx.fillStyle = sweepGrad;
       ctx.fill();
 
-      // Progress arc
+      // Progress arc — uses the risk color
       const startAngle = -Math.PI / 2;
       const endAngle = startAngle + (Math.PI * 2 * displayPercent) / 100;
       ctx.beginPath();
@@ -83,14 +86,14 @@ export function ThreatRadar({ percent, color }) {
       ctx.stroke();
       ctx.shadowBlur = 0;
 
-      // Background arc
+      // Background arc — gold trace
       ctx.beginPath();
       ctx.arc(cx, cy, 72, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(${c.r}, ${c.g}, ${c.b}, 0.06)`;
+      ctx.strokeStyle = `rgba(255, 215, 0, 0.06)`;
       ctx.lineWidth = 4;
       ctx.stroke();
 
-      // Tick marks
+      // Tick marks — alternating gold/silver
       for (let i = 0; i < 60; i++) {
         const angle = (Math.PI * 2 * i) / 60 - Math.PI / 2;
         const inner = i % 5 === 0 ? 64 : 67;
@@ -98,12 +101,15 @@ export function ThreatRadar({ percent, color }) {
         ctx.beginPath();
         ctx.moveTo(cx + inner * Math.cos(angle), cy + inner * Math.sin(angle));
         ctx.lineTo(cx + outer * Math.cos(angle), cy + outer * Math.sin(angle));
-        ctx.strokeStyle = `rgba(${c.r}, ${c.g}, ${c.b}, ${i % 5 === 0 ? 0.25 : 0.08})`;
-        ctx.lineWidth = i % 5 === 0 ? 1.2 : 0.5;
+        const isMajor = i % 5 === 0;
+        ctx.strokeStyle = isMajor
+          ? `rgba(255, 215, 0, 0.25)`
+          : `rgba(192, 192, 192, 0.08)`;
+        ctx.lineWidth = isMajor ? 1.2 : 0.5;
         ctx.stroke();
       }
 
-      // Threat blips
+      // Threat blips — gold dots
       const blipCount = Math.floor(percent / 20);
       for (let i = 0; i < blipCount; i++) {
         const bAngle = (t * 0.3 + i * 1.8) % (Math.PI * 2);
@@ -113,11 +119,11 @@ export function ThreatRadar({ percent, color }) {
         const pulsing = Math.sin(t * 3 + i) * 0.5 + 0.5;
         ctx.beginPath();
         ctx.arc(bx, by, 2 + pulsing * 1.5, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${c.r}, ${c.g}, ${c.b}, ${0.5 + pulsing * 0.5})`;
+        ctx.fillStyle = `rgba(255, 215, 0, ${0.5 + pulsing * 0.5})`;
         ctx.fill();
         // blip glow
         const bg = ctx.createRadialGradient(bx, by, 0, bx, by, 8);
-        bg.addColorStop(0, `rgba(${c.r}, ${c.g}, ${c.b}, ${pulsing * 0.3})`);
+        bg.addColorStop(0, `rgba(255, 215, 0, ${pulsing * 0.3})`);
         bg.addColorStop(1, "transparent");
         ctx.fillStyle = bg;
         ctx.beginPath();
@@ -125,8 +131,8 @@ export function ThreatRadar({ percent, color }) {
         ctx.fill();
       }
 
-      // Cross hairs
-      ctx.strokeStyle = `rgba(${c.r}, ${c.g}, ${c.b}, 0.08)`;
+      // Cross hairs — silver
+      ctx.strokeStyle = `rgba(192, 192, 192, 0.08)`;
       ctx.lineWidth = 0.5;
       ctx.beginPath();
       ctx.moveTo(cx, cy - 80);
@@ -163,7 +169,7 @@ export function ThreatRadar({ percent, color }) {
             fontFamily: "var(--font-display)",
             fontSize: 32,
             fontWeight: 900,
-            color: "white",
+            color: "#FFD700",
             textShadow: `0 0 30px ${color}`,
             lineHeight: 1,
           }}
@@ -173,8 +179,8 @@ export function ThreatRadar({ percent, color }) {
         <span
           style={{
             fontFamily: "var(--font-mono)",
-            fontSize: 8,
-            color: color,
+            fontSize: 11,
+            color: "#C0C0C0",
             letterSpacing: 3,
             marginTop: 4,
             textTransform: "uppercase",
@@ -187,7 +193,7 @@ export function ThreatRadar({ percent, color }) {
   );
 }
 
-// ─── Holographic Input Field ──────────────────────────────────────────────────
+// ─── Holographic Input Field — AMOLED Gold/Silver ─────────────────────────────
 export function HoloInput({ name, label, icon, placeholder, value, onChange, unit }) {
   const [focused, setFocused] = useState(false);
 
@@ -197,10 +203,10 @@ export function HoloInput({ name, label, icon, placeholder, value, onChange, uni
         style={{
           display: "block",
           fontFamily: "var(--font-mono)",
-          fontSize: 9,
+          fontSize: 12,
           letterSpacing: 3,
           textTransform: "uppercase",
-          color: focused ? "#00f5ff" : "#334155",
+          color: focused ? "#FFD700" : "#8B8B94",
           marginBottom: 6,
           transition: "color 0.4s",
         }}
@@ -221,17 +227,17 @@ export function HoloInput({ name, label, icon, placeholder, value, onChange, uni
             padding: "14px 16px",
             paddingRight: unit ? 50 : 16,
             borderRadius: 10,
-            fontSize: 13,
+            fontSize: 14,
             fontFamily: "var(--font-mono)",
             background: focused
-              ? "rgba(0, 245, 255, 0.04)"
+              ? "rgba(255, 215, 0, 0.03)"
               : "rgba(255, 255, 255, 0.02)",
-            border: `1px solid ${focused ? "rgba(0, 245, 255, 0.35)" : "rgba(255, 255, 255, 0.06)"}`,
-            color: "#e2e8f0",
+            border: `1px solid ${focused ? "rgba(255, 215, 0, 0.30)" : "rgba(255, 255, 255, 0.06)"}`,
+            color: "#D4D4D8",
             outline: "none",
             transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
             boxShadow: focused
-              ? "0 0 25px rgba(0, 245, 255, 0.08), inset 0 0 15px rgba(0, 245, 255, 0.02)"
+              ? "0 0 25px rgba(255, 215, 0, 0.06), inset 0 0 15px rgba(255, 215, 0, 0.02)"
               : "none",
           }}
         />
@@ -242,8 +248,8 @@ export function HoloInput({ name, label, icon, placeholder, value, onChange, uni
               right: 14,
               top: "50%",
               transform: "translateY(-50%)",
-              fontSize: 10,
-              color: focused ? "#00f5ff" : "#334155",
+              fontSize: 12,
+              color: focused ? "#FFD700" : "#8B8B94",
               fontFamily: "var(--font-mono)",
               letterSpacing: 1,
               transition: "color 0.4s",
@@ -261,7 +267,7 @@ export function HoloInput({ name, label, icon, placeholder, value, onChange, uni
                 left: "10%",
                 right: "10%",
                 height: 1,
-                background: "linear-gradient(90deg, transparent, #00f5ff, transparent)",
+                background: "linear-gradient(90deg, transparent, #FFD700, transparent)",
               }}
             />
             <div
@@ -273,7 +279,7 @@ export function HoloInput({ name, label, icon, placeholder, value, onChange, uni
                 bottom: -1,
                 borderRadius: 10,
                 pointerEvents: "none",
-                boxShadow: "0 0 15px rgba(0, 245, 255, 0.05)",
+                boxShadow: "0 0 15px rgba(255, 215, 0, 0.04)",
               }}
             />
           </>
@@ -283,7 +289,7 @@ export function HoloInput({ name, label, icon, placeholder, value, onChange, uni
   );
 }
 
-// ─── XAI Feature Bar with animated shimmer ────────────────────────────────────
+// ─── XAI Feature Bar with animated shimmer — Gold theme ───────────────────────
 export function FeatureBar({ label, value, max, color, delay }) {
   const [width, setWidth] = useState(0);
   const [visible, setVisible] = useState(false);
@@ -310,17 +316,17 @@ export function FeatureBar({ label, value, max, color, delay }) {
           alignItems: "center",
           marginBottom: 5,
           fontFamily: "var(--font-mono)",
-          fontSize: 10,
+          fontSize: 13,
         }}
       >
-        <span style={{ color: "#64748b" }}>{label}</span>
+        <span style={{ color: "#A1A1AA" }}>{label}</span>
         <span style={{ color, fontWeight: 700 }}>{value.toFixed(3)}</span>
       </div>
       <div
         style={{
           position: "relative",
-          height: 6,
-          borderRadius: 3,
+          height: 8,
+          borderRadius: 4,
           background: "rgba(255, 255, 255, 0.03)",
           overflow: "hidden",
         }}
@@ -371,19 +377,19 @@ export function AnimatedCounter({ value, duration = 1200, style }) {
   return <span style={style}>{display}</span>;
 }
 
-// ─── Glass Panel wrapper ──────────────────────────────────────────────────────
+// ─── Glass Panel wrapper — AMOLED Dark Glass ──────────────────────────────────
 export function GlassPanel({ children, style, glowColor, animate = false, ...rest }) {
   return (
     <div
       style={{
-        background: "rgba(8, 4, 25, 0.65)",
-        border: `1px solid ${glowColor ? glowColor + "22" : "rgba(255,255,255,0.06)"}`,
+        background: "rgba(5, 5, 5, 0.80)",
+        border: `1px solid ${glowColor ? glowColor + "22" : "rgba(255, 215, 0, 0.06)"}`,
         borderRadius: 20,
         backdropFilter: "blur(30px)",
         WebkitBackdropFilter: "blur(30px)",
         boxShadow: glowColor
-          ? `0 0 60px ${glowColor}10, inset 0 1px 0 rgba(255,255,255,0.03)`
-          : "0 0 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.03)",
+          ? `0 0 60px ${glowColor}10, inset 0 1px 0 rgba(255,255,255,0.02)`
+          : "0 0 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.02)",
         padding: 28,
         position: "relative",
         overflow: "hidden",
@@ -393,7 +399,7 @@ export function GlassPanel({ children, style, glowColor, animate = false, ...res
       }}
       {...rest}
     >
-      {/* Top shine line */}
+      {/* Top shine line — Gold */}
       <div
         style={{
           position: "absolute",
@@ -401,7 +407,7 @@ export function GlassPanel({ children, style, glowColor, animate = false, ...res
           left: "15%",
           right: "15%",
           height: 1,
-          background: `linear-gradient(90deg, transparent, ${glowColor || "rgba(255,255,255,0.08)"}, transparent)`,
+          background: `linear-gradient(90deg, transparent, ${glowColor || "rgba(255, 215, 0, 0.12)"}, transparent)`,
           opacity: 0.5,
         }}
       />
@@ -410,7 +416,7 @@ export function GlassPanel({ children, style, glowColor, animate = false, ...res
   );
 }
 
-// ─── Status badge ─────────────────────────────────────────────────────────────
+// ─── Status badge — Gold/Silver ───────────────────────────────────────────────
 export function StatusBadge({ text, color, pulse = false }) {
   return (
     <div
@@ -420,7 +426,7 @@ export function StatusBadge({ text, color, pulse = false }) {
         gap: 6,
         padding: "4px 12px",
         borderRadius: 20,
-        fontSize: 10,
+        fontSize: 12,
         fontFamily: "var(--font-mono)",
         letterSpacing: 1.5,
         color: color,
@@ -446,7 +452,7 @@ export function StatusBadge({ text, color, pulse = false }) {
   );
 }
 
-// ─── Data Stream Visualizer (matrix rain column) ──────────────────────────────
+// ─── Data Stream Visualizer (matrix rain column) — Gold theme ─────────────────
 export function DataStream({ color, width = 24, speed = 1 }) {
   const canvasRef = useRef(null);
   const animRef = useRef(null);
@@ -468,7 +474,7 @@ export function DataStream({ color, width = 24, speed = 1 }) {
 
     const draw = () => {
       time += 0.05 * speed;
-      ctx.fillStyle = "rgba(2, 1, 8, 0.12)";
+      ctx.fillStyle = "rgba(0, 0, 0, 0.12)";
       ctx.fillRect(0, 0, width, h);
 
       ctx.font = "8px 'JetBrains Mono'";
